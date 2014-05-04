@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Good Weather</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css" />
+	<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+
+    <script type="text/javascript">
+
+        var icons = {
+            "clear-day" : "B",
+            "clear-night" : "C",
+            "rain" : "R",
+            "snow" : "G",
+            "sleet" : "X",
+            "wind" : "S",
+            "fog" : "N",
+            "cloudy" : "Y",
+            "partly-cloudy-day" : "H",
+            "partly-cloudy-night" : "I"  
+        };
+
+        var cities = {
+            "chicago" : {coords : {lat: 41.985831 , lng: -87.654256}},
+            "los angeles" : {coords : {lat: 34.101509 , lng: -118.32691}},
+            "new york" : {coords : {lat: 40.758224 , lng: -73.917404}},
+            "miami" : {coords : {lat: 24.553922 , lng: -81.803260}},
+            "san francisco" : {coords : {lat: 37.74533 , lng: -122.420082}},
+            "current location" : ""
+        };
+
+      
+
+        function loadWeather(cityCoords) {
+
+            var latlng = cityCoords.coords.lat + "," + cityCoords.coords.lng;
+
+            var forecastURL = "https://api.forecast.io/forecast/b795d9fb5a1da8b43b0a85f63fc00521/" + latlng ;
+
+            $.ajax({
+                url: forecastURL,
+                jsonpCallback: 'jsonCallback',
+                contentType: "application/json",
+                dataType: 'jsonp',
+                success: function(json) {
+                    console.log(json);
+                    $("#current_temp").html(Math.round(json.currently.temperature) + "&#176;F");
+                    $("#current_summary").html(json.currently.summary);
+                    $("#current_temp").attr("data-icon", icons[json.currently.icon]);
+                },
+                error: function(e) {
+                    console.log(e.message);
+                }
+            });
+        }
+
+        function loadCity(city) {
+            $("#location").html(city);
+
+            if (city.toLowerCase() == "current location") {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(loadWeather, loadDefaultCity);
+                } else {
+                    loadDefaultCity();
+                }
+
+            } else {
+                loadWeather(cities[city.toLowerCase()]);
+            }
+        }
+
+        function loadDefaultCity() {
+            loadCity("New York");
+        }
+
+        $(document).ready(function() {
+            loadCity("Chicago");
+
+            $("a.city").bind("click", function() {
+               loadCity($(this).html()); 
+            });
+        });
+
+    </script>
+</head>
+
+<body>
+
+<div data-role="page">
+	<div data-role="panel" id="left-panel">
+        <ul data-role="listview">
+            <li data-icon="delete"><a href="#" data-rel="close">Close</a></li>
+            <li data-role="list-divider">Select a City</li>
+            <li><a href="#" class="city" data-rel="close">Current Location</a></li>
+            <li><a href="#" class="city" data-rel="close">Chicago</a></li>
+            <li><a href="#" class="city" data-rel="close">Los Angeles</a></li>
+            <li><a href="#" class="city" data-rel="close">Miami</a></li>
+            <li><a href="#" class="city" data-rel="close">New York</a></li>
+            <li><a href="#" class="city" data-rel="close">San Francisco</a></li>
+        </ul>
+
+	</div><!-- /panel -->
+
+	<div data-role="header" data-position="fixed">
+		<h1>GOOD Weather</h1>
+        <a href="#left-panel" data-icon="bars" data-iconpos="notext" data-iconshadow="false" data-role="button">Menu</a>
+	</div>
+	<div role="main" class="ui-content">
+        <h1 id="current_temp" class="icon" data-icon="B">65&#176;</h1>
+        <p id="current_summary">Party Cloudy</p>
+        <p id="location">Current Location</p>
+    </div>
+
+</div>
+	
+
+</body>
+</html>
